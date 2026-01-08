@@ -29,8 +29,7 @@ except FileNotFoundError:
     st.error("File 'online_shoppers_intention.csv' tidak ditemukan. Pastikan file ada di folder yang sama.")
     st.stop()
 
-# --- Preprocessing Awal (Sama seperti code sebelumnya) ---
-# Kita copy dataframe agar data asli tidak berubah untuk display
+# --- Preprocessing Awal ---
 df_processed = df.copy()
 le = LabelEncoder()
 df_processed['Month'] = le.fit_transform(df_processed['Month'])
@@ -51,13 +50,11 @@ with col1:
     """)
     
     st.subheader("Informasi Data")
-    # Poin 2 & 3: Bentuk dan Jumlah
     st.write(f"**Bentuk Data:** {df.shape[0]} Baris, {df.shape[1]} Kolom")
     st.write(f"**Total Data:** {df.shape[0]}")
 
 with col2:
     st.subheader("Fitur (Kolom)")
-    # Poin 4: Daftar Kolom
     st.write(df.columns.tolist())
 
 st.write("**Sampel Data Asli:**")
@@ -69,7 +66,7 @@ st.header("2. Seleksi Fitur & Preprocessing")
 
 st.info("Sesuai rancangan kode, kita memilih 2 fitur utama untuk visualisasi 2D: **ProductRelated_Duration** dan **PageValues**.")
 
-# Memilih fitur (Index 5 dan 8 sesuai request sebelumnya)
+# Memilih fitur
 X = df_processed.iloc[:, [5, 8]].values
 y = df_processed.iloc[:, -1].values # Kolom Revenue
 
@@ -150,3 +147,29 @@ with tab2:
     with st.spinner('Membuat grafik Test Set...'):
         fig_test = visualize_streamlit(X_test, y_test, 'Naive Bayes (Test set)')
         st.pyplot(fig_test)
+
+# --- [BARU] BAGIAN 6: Deskripsi Hasil & Analisis ---
+st.markdown("---")
+st.header("4. Kesimpulan & Analisis Hasil")
+
+# Ekstrak nilai dari confusion matrix
+tn, fp, fn, tp = cm.ravel()
+
+st.success("Analisis Performa Model:")
+st.markdown(f"""
+Berdasarkan hasil pengujian di atas, berikut adalah interpretasi dari analisis Naive Bayes:
+
+1.  **Akurasi Keseluruhan:**
+    Model mampu memprediksi apakah seorang pengunjung akan membeli atau tidak dengan tingkat kebenaran sebesar **{acc*100:.2f}%**.
+    
+2.  **Detail Kesalahan Prediksi (Dari Confusion Matrix):**
+    * **Benar Membeli (True Positive):** {tp} orang diprediksi membeli dan benar-benar membeli.
+    * **Benar Tidak Membeli (True Negative):** {tn} orang diprediksi tidak membeli dan memang tidak membeli.
+    * **False Alarm (False Positive):** {fp} orang diprediksi membeli, padahal sebenarnya tidak.
+    * **Missed Opportunity (False Negative):** {fn} orang diprediksi tidak membeli, padahal sebenarnya mereka MEMBELI. (Ini adalah angka yang harus diminimalisir dalam bisnis).
+
+3.  **Insight dari Visualisasi Grafik:**
+    * **Area Merah:** Menunjukkan zona prediksi pengunjung yang **TIDAK** membeli.
+    * **Area Hijau:** Menunjukkan zona prediksi pengunjung yang **AKAN** membeli.
+    * **Pengaruh Fitur:** Terlihat dari grafik bahwa sumbu Y (**PageValues**) memiliki pengaruh sangat besar. Titik-titik data (pengunjung) yang memiliki nilai *PageValues* tinggi cenderung berada di area hijau. Artinya, semakin tinggi nilai rata-rata halaman yang dikunjungi, semakin besar peluang pengunjung tersebut melakukan transaksi.
+""")
